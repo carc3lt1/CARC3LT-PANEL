@@ -1,16 +1,16 @@
 #!/bin/bash
-# 🚀 INSTALADOR CARC 3LT V.1.8_Beta - ANTI-SUICIDIO & FIX DNS 🚀
+# 🚀 INSTALADOR CARC 3LT V.1.8_Beta - VERSIÓN FINAL BLINDADA 🚀
 # ---------------------------------------------------------
 
-# --- 0. AUTO-ELEVACIÓN INICIAL (TU LÓGICA) ---
-# Si no soy root, me reinicio a mí mismo usando sudo y salgo de la sesión anterior.
+# --- 0. AUTO-ELEVACIÓN INICIAL (FORCE ROOT) ---
+# Si el usuario no es root (ID 0), recargamos el script con sudo inmediatamente.
 if [ "$(id -u)" -ne 0 ]; then
-  echo "📢 Elevando permisos a ROOT para iniciar instalación limpia..."
-  sudo bash "$0" "$@"
+  echo "📢 El script requiere permisos ROOT. Elevando automáticamente..."
+  # Se vuelve a descargar y ejecutar a sí mismo como root puro
+  sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/carc3lt1/CARC3LT-PANEL/main/install.sh)"
   exit
 fi
-# ---------------------------------------------
-# A PARTIR DE AQUÍ, EL SCRIPT YA SE ESTÁ EJECUTANDO COMO ROOT PURO
+# A partir de aquí, aseguramos que somos ROOT
 # ---------------------------------------------
 
 REPO="https://raw.githubusercontent.com/carc3lt1/CARC3LT-PANEL/main"
@@ -22,16 +22,24 @@ IP_VALIDATOR="144.24.181.165"
 # Colores
 P='\033[1;35m'; C='\033[1;36m'; W='\033[1;37m'; G='\033[1;32m'; Y='\033[1;33m'; R='\033[1;31m'; N='\033[0m'
 
-# --- 1. PREVENCIÓN DE ERRORES (FIX ANTI-SUICIDIO) ---
+# --- 1. FUNCIÓN DE LIMPIEZA BLINDADA (NO SE MATA A SÍ MISMO) ---
 MY_PID=$$
+MY_PPID=$PPID
 
 kill_safe() {
     local pattern=$1
-    # [FIX CRÍTICO] Excluimos bash, sudo y el propio nombre del script para no auto-matarnos
-    pids=$(pgrep -f "$pattern" | grep -v "$MY_PID" | grep -v "grep" | grep -v "bash" | grep -v "sudo" | grep -v "install")
+    # Buscamos procesos que coincidan, pero EXCLUIMOS CRÍTICAMENTE:
+    # - El PID actual del script ($MY_PID)
+    # - El PID padre ($MY_PPID)
+    # - Procesos de 'bash' (para no matar la terminal)
+    # - La palabra 'install' (por si el script se llama install.sh)
+    # - Comandos de descarga (curl/wget)
+    pids=$(pgrep -f "$pattern" | grep -v "$MY_PID" | grep -v "$MY_PPID" | grep -v "grep" | grep -v "bash" | grep -v "install" | grep -v "curl" | grep -v "wget")
+    
     if [[ -n "$pids" ]]; then
         echo -ne "    - Deteniendo $pattern... "
-        kill -9 $pids > /dev/null 2>&1
+        # Enviamos señal kill solo a los PIDs filtrados
+        echo "$pids" | xargs kill -9 > /dev/null 2>&1
         echo "OK"
     fi
 }
@@ -88,7 +96,7 @@ echo -e "${G}OK${N}"
 
 # --- 5. LIMPIEZA SEGURA ---
 msg_inst "Limpieza de Servicios Anteriores"
-# Ahora kill_safe es seguro y no matará el instalador
+# Ahora kill_safe filtrará el propio script para no matarse
 kill_safe "badvpn-bin"
 kill_safe "proxy.py"
 kill_safe "stunnel4"
@@ -119,8 +127,8 @@ echo -e "      ${G}✅ INSTALACIÓN COMPLETADA EXITOSAMENTE${N}"
 echo -e "      ${W}Escribe ${Y}menu ${W}para iniciar.${N}"
 echo -e "${P}======================================================${N}"
 
-# --- 8. MANTENER ROOT ---
-# Ya estamos en root, pero usamos esto para limpiar el entorno y dejar al usuario en la shell
-echo -e " ${Y}Iniciando sesión Root permanente...${N}"
+# --- 8. QUEDARSE EN ROOT ---
+# Nos aseguramos de dejar al usuario en una shell de root limpia
+echo -e " ${Y}Accediendo a terminal Root...${N}"
 cd /root
 exec sudo su -
