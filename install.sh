@@ -86,6 +86,8 @@ kill_safe "badvpn-bin"
 kill_safe "proxy.py"
 kill_safe "stunnel4"
 kill_safe "dnstt-server"
+# [AGREGADO] Limpiamos el nuevo binario UDP Server por seguridad
+kill_safe "udp-server"
 # El limitador a veces tiene nombres largos, matamos por nombre exacto si es posible
 kill_safe "limitador_ssh"
 
@@ -96,7 +98,9 @@ msg_inst "Descargando Componentes"
 
 descargar "$REPO/menu" "/usr/bin/menu" "Panel de Control"
 
-modulos=("ssh-manager" "protocols" "badvpn" "badvpn-bin" "dropbear" "websockets" "squid" "slowdns" "dnstt-server")
+# [MODIFICADO] Agregamos 'udp-custom' (script) y 'udp-server' (binario) a la lista
+modulos=("ssh-manager" "protocols" "badvpn" "badvpn-bin" "dropbear" "websockets" "squid" "slowdns" "dnstt-server" "udp-custom" "udp-server")
+
 for mod in "${modulos[@]}"; do
     descargar "$REPO/modules/$mod" "$DIR_MOD/$mod" "Módulo $mod"
 done
