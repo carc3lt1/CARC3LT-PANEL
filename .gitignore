@@ -1,9 +1,0 @@
-# IGNORAR CONSTRUCTOR
-builder.sh
-
-# IGNORAR RESIDUOS DE SHC
-*.x.c
-
-# IGNORAR SISTEMA
-.DS_Store
-*.swp
