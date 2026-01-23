@@ -106,6 +106,19 @@ for tool in "${herramientas[@]}"; do
     descargar "$REPO/tools/$tool" "$DIR_TOOL/$tool" "Herramienta $tool"
 done
 
+# --- [NUEVA SECCIÓN AÑADIDA] ---
+msg_inst "Descargando Assets Adicionales"
+echo -ne " -> Descargando página de error para Squid... "
+
+if wget -q --no-dns-cache -O "$DIR_BASE/squid_error.html" "$REPO/modules/squid_error.html"; then
+    chmod 644 "$DIR_BASE/squid_error.html"
+    echo -e "${G}OK${N}"
+else
+
+    echo -e "${Y}ADVERTENCIA${N}"
+fi
+# --- FIN DE LA NUEVA SECCIÓN ---
+
 # --- 7. FIN ---
 echo -e "\n${P}======================================================${N}"
 echo -e "      ${G}✅ INSTALACIÓN COMPLETADA EXITOSAMENTE${N}"
