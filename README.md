@@ -8,4 +8,5 @@ Accede a tu VPS (Usario root) y ejecuta el siguiente comando:
 
 ```bash
 sudo su -
-apt update -y; apt upgrade -y; wget -q https://raw.githubusercontent.com/carc3lt1/CARC3LT-PANEL/main/install.sh; chmod +x install.sh; ./install.sh
+
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/carc3lt1/CARC3LT-PANEL/main/install.sh)"
