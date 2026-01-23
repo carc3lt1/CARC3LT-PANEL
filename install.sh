@@ -14,7 +14,8 @@ P='\033[1;35m'; C='\033[1;36m'; W='\033[1;37m'; G='\033[1;32m'; Y='\033[1;33m'; 
 MY_PID=$$
 kill_safe() {
     local pattern=$1
-    pids=$(pgrep -f "$pattern" | grep -v "$MY_PID" | grep -v "grep")
+    # [CORRECCIÓN] Excluimos 'sudo' y 'bash' para no matar al instalador mismo
+    pids=$(pgrep -f "$pattern" | grep -v "$MY_PID" | grep -v "grep" | grep -v "sudo" | grep -v "bash")
     if [[ -n "$pids" ]]; then
         echo -ne "    - Deteniendo $pattern... "
         kill -9 $pids > /dev/null 2>&1
