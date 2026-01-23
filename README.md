@@ -4,9 +4,7 @@ Panel profesional de administración para servidores VPS. Optimizado para ventas
 
 ## 📥 Instalación Rápida
 
-Accede a tu VPS (Usario root) y ejecuta el siguiente comando:
+Accede a tu VPS y ejecuta el siguiente comando:
 
 ```bash
-sudo su -
-
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/carc3lt1/CARC3LT-PANEL/main/install.sh)"
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/carc3lt1/CARC3LT-PANEL/main/install.sh)"
