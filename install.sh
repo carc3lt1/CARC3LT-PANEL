@@ -1,5 +1,5 @@
 #!/bin/bash
-# 🚀 INSTALADOR CARC 3LT V.1.8_Beta - ANTI-SUICIDIO & FIX DNS 🚀
+# 🚀 INSTALADOR CARC 3LT V.2.0_Final - DUAL UDP SUPPORT 🚀
 # ---------------------------------------------------------
 if [ "$(id -u)" -ne 0 ]; then
   echo "📢 Elevando permisos a ROOT para iniciar instalación limpia..."
@@ -16,15 +16,15 @@ IP_VALIDATOR="144.24.181.165"
 # Colores
 P='\033[1;35m'; C='\033[1;36m'; W='\033[1;37m'; G='\033[1;32m'; Y='\033[1;33m'; R='\033[1;31m'; N='\033[0m'
 
-# --- 1. PREVENCIÓN DE ERRORES (FIX ANTI-SUICIDIO) ---
+# --- 1. PREVENCIÓN DE ERRORES ---
 MY_PID=$$
 
 kill_safe() {
     local pattern=$1
-    
+    # Filtramos para no matarnos a nosotros mismos ni al instalador
     pids=$(pgrep -f "$pattern" | grep -v "$MY_PID" | grep -v "grep" | grep -v "bash" | grep -v "sudo" | grep -v "install")
     if [[ -n "$pids" ]]; then
-        echo -ne "    - Deteniendo $pattern... "
+        echo -ne "    - Forzando cierre de $pattern... "
         kill -9 $pids > /dev/null 2>&1
         echo "OK"
     fi
@@ -38,19 +38,28 @@ msg_inst() {
 
 descargar() {
     local url=$1; local dest=$2; local name=$3
+    # Si el archivo existe, intentamos borrarlo antes de descargar
+    if [[ -f "$dest" ]]; then
+        rm -f "$dest" > /dev/null 2>&1
+    fi
+
     echo -ne " -> Descargando ${name}... "
     if wget -q --no-dns-cache -O "$dest" "$url"; then
         chmod 777 "$dest"
         echo -e "${G}OK${N}"
     else
         echo -e "${R}FALLÓ${N}"
+        # Si falla y es un binario crítico, mostramos advertencia
+        if [[ "$name" == *"server"* ]]; then
+             echo -e "    ${Y}(Verifica que el archivo esté en tu GitHub)${N}"
+        fi
     fi
 }
 
 # --- INICIO ---
 clear
 echo -e "${P}======================================================${N}"
-echo -e "      ${W}🚀 INSTALADOR OFICIAL CARC 3LT V.1.8_Beta 🚀${N}"
+echo -e "      ${W}🚀 INSTALADOR OFICIAL CARC 3LT V.2.0 🚀${N}"
 echo -e "${P}======================================================${N}"
 
 # --- 2. REPARACIÓN CRÍTICA DE RED ---
@@ -80,24 +89,38 @@ mkdir -p "$DIR_MOD" "$DIR_TOOL"
 rm -f /usr/bin/menu
 echo -e "${G}OK${N}"
 
-# --- 5. LIMPIEZA SEGURA ---
-msg_inst "Limpieza de Servicios Anteriores"
+# --- 5. LIMPIEZA PROFUNDA (FIX TEXT FILE BUSY) ---
+msg_inst "Deteniendo Servicios Activos"
+
+echo -ne "    - Desactivando servicios Systemd... "
+# Usamos 'disable --now' para asegurar que NO se reinicien solos
+systemctl disable --now udp-custom > /dev/null 2>&1
+systemctl disable --now hysteria > /dev/null 2>&1
+systemctl stop squid > /dev/null 2>&1
+echo "OK"
+
+# Limpieza de procesos huérfanos
 kill_safe "badvpn-bin"
 kill_safe "proxy.py"
 kill_safe "stunnel4"
 kill_safe "dnstt-server"
-kill_safe "udp-server"
 
-kill_safe "hysteria-server"
+# AQUÍ ESTÁN LOS 2 UDPS:
+kill_safe "udp-server"       # UDP Custom
+kill_safe "hysteria-server"  # Hysteria
+
 kill_safe "limitador_ssh"
-echo -e " -> Limpieza completada."
+
+echo -e " -> Limpieza completada. Archivos liberados."
 
 # --- 6. DESCARGAS ---
 msg_inst "Descargando Componentes"
 
 descargar "$REPO/menu" "/usr/bin/menu" "Panel de Control"
 
+# Lista completa incluyendo los DOS scripts de gestión y los DOS binarios
 modulos=("ssh-manager" "protocols" "badvpn" "badvpn-bin" "dropbear" "websockets" "squid" "slowdns" "dnstt-server" "udp-custom" "udp-server" "hysteria" "hysteria-server")
+
 for mod in "${modulos[@]}"; do
     descargar "$REPO/modules/$mod" "$DIR_MOD/$mod" "Módulo $mod"
 done
@@ -108,6 +131,7 @@ for tool in "${herramientas[@]}"; do
     descargar "$REPO/tools/$tool" "$DIR_TOOL/$tool" "Herramienta $tool"
 done
 
+# --- ASSETS ADICIONALES ---
 msg_inst "Descargando Assets Adicionales"
 echo -ne " -> Descargando página de error para Squid... "
 
@@ -115,7 +139,6 @@ if wget -q --no-dns-cache -O "$DIR_BASE/squid_error.html" "$REPO/modules/squid_e
     chmod 644 "$DIR_BASE/squid_error.html"
     echo -e "${G}OK${N}"
 else
-
     echo -e "${Y}ADVERTENCIA${N}"
 fi
 
