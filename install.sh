@@ -87,6 +87,8 @@ kill_safe "proxy.py"
 kill_safe "stunnel4"
 kill_safe "dnstt-server"
 kill_safe "udp-server"
+# [AGREGADO] Limpieza para el nuevo módulo
+kill_safe "hysteria" 
 kill_safe "limitador_ssh"
 echo -e " -> Limpieza completada."
 
@@ -95,7 +97,8 @@ msg_inst "Descargando Componentes"
 
 descargar "$REPO/menu" "/usr/bin/menu" "Panel de Control"
 
-modulos=("ssh-manager" "protocols" "badvpn" "badvpn-bin" "dropbear" "websockets" "squid" "slowdns" "dnstt-server" "udp-custom" "udp-server")
+# [MODIFICADO] Agregamos "hysteria" a la lista
+modulos=("ssh-manager" "protocols" "badvpn" "badvpn-bin" "dropbear" "websockets" "squid" "slowdns" "dnstt-server" "udp-custom" "udp-server" "hysteria")
 for mod in "${modulos[@]}"; do
     descargar "$REPO/modules/$mod" "$DIR_MOD/$mod" "Módulo $mod"
 done
@@ -106,7 +109,7 @@ for tool in "${herramientas[@]}"; do
     descargar "$REPO/tools/$tool" "$DIR_TOOL/$tool" "Herramienta $tool"
 done
 
-# --- [NUEVA SECCIÓN AÑADIDA] ---
+# --- ASSETS ADICIONALES ---
 msg_inst "Descargando Assets Adicionales"
 echo -ne " -> Descargando página de error para Squid... "
 
@@ -114,10 +117,8 @@ if wget -q --no-dns-cache -O "$DIR_BASE/squid_error.html" "$REPO/modules/squid_e
     chmod 644 "$DIR_BASE/squid_error.html"
     echo -e "${G}OK${N}"
 else
-
     echo -e "${Y}ADVERTENCIA${N}"
 fi
-# --- FIN DE LA NUEVA SECCIÓN ---
 
 # --- 7. FIN ---
 echo -e "\n${P}======================================================${N}"
