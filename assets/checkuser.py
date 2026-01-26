@@ -50,4 +50,4 @@ if __name__ == '__main__':
     if os.path.exists(CERT_FILE):
         app.run(host='0.0.0.0', port=2095, ssl_context=(CERT_FILE, KEY_FILE))
     else:
-        app.run(host='0.0.0.0', port=2095)
+        app.run(host='0.0.0.0', port=2095)      
