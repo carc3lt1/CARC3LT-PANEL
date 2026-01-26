@@ -85,7 +85,8 @@ apt-get install wget curl unzip screen net-tools iptables-persistent netfilter-p
 echo -e "${G}OK${N}"
 
 echo -ne " -> Creando directorios... "
-mkdir -p "$DIR_MOD" "$DIR_TOOL"
+# SE AGREGÓ LA CARPETA ASSETS AQUÍ
+mkdir -p "$DIR_MOD" "$DIR_TOOL" "$DIR_BASE/assets"
 rm -f /usr/bin/menu
 echo -e "${G}OK${N}"
 
@@ -133,6 +134,10 @@ done
 
 # --- ASSETS ADICIONALES ---
 msg_inst "Descargando Assets Adicionales"
+
+# AGREGADO: Descarga de CheckUser API
+descargar "$REPO/assets/checkuser.py" "$DIR_BASE/assets/checkuser.py" "CheckUser API (Python)"
+
 echo -ne " -> Descargando página de error para Squid... "
 
 if wget -q --no-dns-cache -O "$DIR_BASE/squid_error.html" "$REPO/modules/squid_error.html"; then

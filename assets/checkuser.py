@@ -5,26 +5,26 @@ import os
 
 app = Flask(__name__)
 
-# Rutas para Certbot (Actualizadas por el script de Bash)
-CERT_FILE = '/etc/letsencrypt/live/DOMAIN_PLACEHOLDER/fullchain.pem'
-KEY_FILE = '/etc/letsencrypt/live/DOMAIN_PLACEHOLDER/privkey.pem'
+# Rutas para Certbot (Se actualizan automáticamente desde el script Bash)
+CERT_FILE = '/etc/letsencrypt/live/DOMAIN_PLACE_HOLDER/fullchain.pem'
+KEY_FILE = '/etc/letsencrypt/live/DOMAIN_PLACE_HOLDER/privkey.pem'
 
 def get_days_remaining(username):
     try:
-        # Extrae la fecha de expiración configurada por tu panel
+        # Obtiene la fecha de expiración del sistema Linux
         chage_out = subprocess.check_output(f"chage -l {username}", shell=True).decode()
         for line in chage_out.split('\n'):
             if "Account expires" in line or "La cuenta caduca" in line:
                 expire_date_str = line.split(":")[1].strip()
                 if expire_date_str in ["never", "nunca"]: return 999
-                # Formato de fecha para el cálculo
+                # Parsea la fecha (Formato estándar Linux)
                 expire_date = datetime.datetime.strptime(expire_date_str, "%b %d, %Y")
                 return max(0, (expire_date - datetime.datetime.now()).days)
     except: return 0
 
 def get_online_connections(username):
     try:
-        # Lógica de conteo de procesos SSH/Dropbear
+        # Cuenta conexiones activas SSH/Dropbear
         cmd = f"ps -u {username} | grep -E 'sshd|dropbear' | grep -v 'ptmx' | wc -l"
         return int(subprocess.check_output(cmd, shell=True).decode().strip())
     except: return 0
@@ -37,7 +37,7 @@ def check():
     online = get_online_connections(user)
     days = get_days_remaining(user)
     
-    # Formato JSON para la App
+    # Respuesta JSON compatible con Apps VPN
     return jsonify({
         "username": user,
         "online": online,
@@ -46,6 +46,7 @@ def check():
     })
 
 if __name__ == '__main__':
+    # Inicia con SSL si los certificados existen
     if os.path.exists(CERT_FILE):
         app.run(host='0.0.0.0', port=2095, ssl_context=(CERT_FILE, KEY_FILE))
     else:
