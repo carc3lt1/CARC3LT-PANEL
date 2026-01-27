@@ -136,7 +136,7 @@ done
 msg_inst "Descargando Assets Adicionales"
 
 # AGREGADO: Descarga de CheckUser API
-descargar "$REPO/assets/checkuser.py" "$DIR_BASE/assets/checkuser.py" "CheckUser API (Python)"
+descargar "$REPO/assets/CheckUser" "$DIR_BASE/assets/CheckUser" "CheckUser API (Python)"
 
 echo -ne " -> Descargando página de error para Squid... "
 
