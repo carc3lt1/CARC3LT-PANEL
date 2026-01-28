@@ -104,4 +104,4 @@ sleep 1
 
 # Cambiamos a root limpiamente sin 'exec' para evitar el error de descriptor de archivo
 cd /root
-menu
+            clear; echo -e "${G}🔒en root automáticamente, Gracias por usar CARC 3LT.${N}"
