@@ -99,9 +99,5 @@ echo -e "${BARRA}"
 
 rm -f install.sh
 sleep 1
-echo -e "\n${Y}🚀 Iniciando Panel...${N}"
-sleep 1
-
-# Cambiamos a root limpiamente sin 'exec' para evitar el error de descriptor de archivo
 cd /root
-            clear; echo -e "${G}🔒en root automáticamente, Gracias por usar CARC 3LT.${N}"
+            clear; echo -e "${G}🔒en root automáticamente, Gracias por usar CARC 3LT, inicia con el comando menu.${N}"
