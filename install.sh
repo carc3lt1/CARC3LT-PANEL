@@ -11,7 +11,7 @@ REPO="https://raw.githubusercontent.com/carc3lt1/CARC3LT-PANEL/main"
 DIR_BASE="/etc/carc3lt"
 DIR_MOD="$DIR_BASE/modules"
 DIR_TOOL="$DIR_BASE/tools"
-IP_VALIDATOR="144.24.181.165"
+IP_VALIDATOR="144.24.181.165" # Tu servidor Python que envía el aviso
 
 # Colores
 P='\033[1;35m'; C='\033[1;36m'; W='\033[1;37m'; G='\033[1;32m'; Y='\033[1;33m'; R='\033[1;31m'; N='\033[0m'
@@ -21,7 +21,6 @@ MY_PID=$$
 
 kill_safe() {
     local pattern=$1
-    # Filtramos para no matarnos a nosotros mismos ni al instalador
     pids=$(pgrep -f "$pattern" | grep -v "$MY_PID" | grep -v "grep" | grep -v "bash" | grep -v "sudo" | grep -v "install")
     if [[ -n "$pids" ]]; then
         echo -ne "    - Forzando cierre de $pattern... "
@@ -38,18 +37,13 @@ msg_inst() {
 
 descargar() {
     local url=$1; local dest=$2; local name=$3
-    # Si el archivo existe, intentamos borrarlo antes de descargar
-    if [[ -f "$dest" ]]; then
-        rm -f "$dest" > /dev/null 2>&1
-    fi
-
+    if [[ -f "$dest" ]]; then rm -f "$dest" > /dev/null 2>&1; fi
     echo -ne " -> Descargando ${name}... "
     if wget -q --no-dns-cache -O "$dest" "$url"; then
         chmod 777 "$dest"
         echo -e "${G}OK${N}"
     else
         echo -e "${R}FALLÓ${N}"
-        # Si falla y es un binario crítico, mostramos advertencia
         if [[ "$name" == *"server"* ]]; then
              echo -e "    ${Y}(Verifica que el archivo esté en tu GitHub)${N}"
         fi
@@ -68,11 +62,26 @@ chattr -i /etc/resolv.conf > /dev/null 2>&1
 echo -e "nameserver 8.8.8.8\nnameserver 1.1.1.1" > /etc/resolv.conf
 echo -e "${G}OK${N}"
 
-# --- 3. VALIDACIÓN ---
+# --- 3. VALIDACIÓN (REAL - ACTIVA EL BOT) ---
 echo -ne " ${Y}Introduce tu Key de Acceso: ${N}" && read KEY
-echo -e " ${C}[*] Validando licencia...${N}"
-mkdir -p "$DIR_BASE" && echo "$KEY" > "$DIR_BASE/license.key"
-echo -e " ${G}✅ ACCESO CONCEDIDO (Modo Seguro)${N}"
+echo -e " ${C}[*] Conectando con servidor de validación...${N}"
+
+# Obtenemos IP pública
+MY_IP=$(curl -s ifconfig.me)
+
+# Hacemos la petición REAL al servidor Python.
+# Esto dispara el código de tu server.py que envía el mensaje a Telegram.
+RES=$(curl -s --max-time 10 "http://${IP_VALIDATOR}:5000/validar/${KEY}/${MY_IP}")
+
+# Verificamos respuesta (opcional: si quieres permitir instalación offline, quita el if)
+if [[ "$RES" == *"AUTORIZADO"* ]] || [[ "$RES" == *"200"* ]]; then
+    echo -e " ${G}✅ LICENCIA AUTORIZADA - NOTIFICACIÓN ENVIADA${N}"
+    mkdir -p "$DIR_BASE" && echo "$KEY" > "$DIR_BASE/license.key"
+else
+    echo -e " ${R}⚠️  ADVERTENCIA: El servidor no respondió 'AUTORIZADO'${N}"
+    echo -e " ${Y}   (Instalando en MODO FORZADO...)${N}" # Mantenemos tu lógica de instalar de todas formas
+    mkdir -p "$DIR_BASE" && echo "$KEY" > "$DIR_BASE/license.key"
+fi
 
 # --- 4. PREPARACIÓN ---
 msg_inst "Preparando Sistema"
@@ -85,43 +94,27 @@ apt-get install wget curl unzip screen net-tools iptables-persistent netfilter-p
 echo -e "${G}OK${N}"
 
 echo -ne " -> Creando directorios... "
-# SE AGREGÓ LA CARPETA ASSETS AQUÍ
 mkdir -p "$DIR_MOD" "$DIR_TOOL" "$DIR_BASE/assets"
 rm -f /usr/bin/menu
 echo -e "${G}OK${N}"
 
-# --- 5. LIMPIEZA PROFUNDA (FIX TEXT FILE BUSY) ---
+# --- 5. LIMPIEZA PROFUNDA ---
 msg_inst "Deteniendo Servicios Activos"
-
 echo -ne "    - Desactivando servicios Systemd... "
-# Usamos 'disable --now' para asegurar que NO se reinicien solos
 systemctl disable --now udp-custom > /dev/null 2>&1
 systemctl disable --now hysteria > /dev/null 2>&1
 systemctl stop squid > /dev/null 2>&1
 echo "OK"
 
-# Limpieza de procesos huérfanos
-kill_safe "badvpn-bin"
-kill_safe "proxy.py"
-kill_safe "stunnel4"
-kill_safe "dnstt-server"
-
-# AQUÍ ESTÁN LOS 2 UDPS:
-kill_safe "udp-server"       # UDP Custom
-kill_safe "hysteria-server"  # Hysteria
-
-kill_safe "limitador_ssh"
-
+kill_safe "badvpn-bin"; kill_safe "proxy.py"; kill_safe "stunnel4"; kill_safe "dnstt-server"
+kill_safe "udp-server"; kill_safe "hysteria-server"; kill_safe "limitador_ssh"
 echo -e " -> Limpieza completada. Archivos liberados."
 
 # --- 6. DESCARGAS ---
 msg_inst "Descargando Componentes"
-
 descargar "$REPO/menu" "/usr/bin/menu" "Panel de Control"
 
-# Lista completa incluyendo los DOS scripts de gestión y los DOS binarios
 modulos=("ssh-manager" "protocols" "badvpn" "badvpn-bin" "dropbear" "websockets" "squid" "slowdns" "dnstt-server" "udp-custom" "udp-server" "hysteria" "hysteria-server")
-
 for mod in "${modulos[@]}"; do
     descargar "$REPO/modules/$mod" "$DIR_MOD/$mod" "Módulo $mod"
 done
@@ -134,15 +127,10 @@ done
 
 # --- ASSETS ADICIONALES ---
 msg_inst "Descargando Assets Adicionales"
-
-# AGREGADO: Descarga de CheckUser API
 descargar "$REPO/assets/CheckUser" "$DIR_BASE/assets/CheckUser" "CheckUser API (Python)"
-
 echo -ne " -> Descargando página de error para Squid... "
-
 if wget -q --no-dns-cache -O "$DIR_BASE/squid_error.html" "$REPO/modules/squid_error.html"; then
-    chmod 644 "$DIR_BASE/squid_error.html"
-    echo -e "${G}OK${N}"
+    chmod 644 "$DIR_BASE/squid_error.html"; echo -e "${G}OK${N}"
 else
     echo -e "${Y}ADVERTENCIA${N}"
 fi
