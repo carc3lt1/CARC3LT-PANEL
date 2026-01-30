@@ -99,5 +99,5 @@ echo -e "${BARRA}"
 
 rm -f install.sh
 sleep 1
-cd /root
+exec sudo su -
             clear; echo -e "${G}🔒en root automáticamente, Gracias por usar CARC 3LT, inicia con el comando menu.${N}"
