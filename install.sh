@@ -98,6 +98,7 @@ echo -e "       ${W}Bienvenido al ecosistema CARC 3LT${N}"
 echo -e "${BARRA}"
 
 rm -f install.sh
-sleep 1
-exec sudo su -
+
             clear; echo -e "${G}🔒en root automáticamente, Gracias por usar CARC 3LT, inicia con el comando menu.${N}"
+sleep 5
+exec sudo su -
