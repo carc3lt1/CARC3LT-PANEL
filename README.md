@@ -15,4 +15,4 @@ Panel profesional de administración para servidores VPS. Optimizado para ventas
 Accede a tu VPS y ejecuta el siguiente comando:
 
 ```bash
-sudo su - -c "wget -q [https://raw.githubusercontent.com/carc3lt1/CARC3LT-PANEL/main/install](https://raw.githubusercontent.com/carc3lt1/CARC3LT-PANEL/main/install) -O /tmp/install && chmod +x /tmp/install && /tmp/install"
+sudo su - -c "wget -q https://raw.githubusercontent.com/carc3lt1/CARC3LT-PANEL/main/install -O /tmp/install && chmod +x /tmp/install && /tmp/install"
