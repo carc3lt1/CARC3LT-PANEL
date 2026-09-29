@@ -3,7 +3,6 @@
 Panel profesional de administración para servidores VPS. Optimizado para ventas de servicios VPN/SSH con herramientas de auto-reparación, seguridad SSL y protocolos de última generación.
 
 ## ✨ Características Principales
-## ✨ Características Principales
 - 🛡️ **Smart License System:** Validación dinámica de tokens en la nube con tecnología anti-clonación y bloqueo automático.
 - 🐆 **Balam Core Engine:** Nuestro núcleo de túneles exclusivo, diseñado para máxima velocidad, baja latencia y evasión de bloqueos.
 - 🌀 **Suite de Protocolos:** Soporte integral para conexiones avanzadas (UDP Premium, DNS Tunneling, WebSocket Proxy).
@@ -12,7 +11,7 @@ Panel profesional de administración para servidores VPS. Optimizado para ventas
 
 ## 📥 Instalación Rápida
 
-Accede a tu VPS y ejecuta el siguiente comando:
+Accede a tu VPS (Ubuntu 20.04/22.04) y ejecuta el siguiente comando asegurándote de copiarlo en **una sola línea**:
 
 ```bash
-sudo su - -c "wget -q https://raw.githubusercontent.com/carc3lt1/CARC3LT-PANEL/main/install -O /tmp/install && chmod +x /tmp/install && /tmp/install"
+sudo su - -c "wget -q [https://raw.githubusercontent.com/carc3lt1/CARC3LT-PANEL/main/install](https://raw.githubusercontent.com/carc3lt1/CARC3LT-PANEL/main/install) -O /tmp/install && chmod +x /tmp/install && /tmp/install"
